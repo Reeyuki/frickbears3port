@@ -689,9 +689,9 @@
 		        const pad2 = function (n) { return String(n).padStart(2, "0"); };
 		        const normalizePath = function (path) {
 		          let p = String(path || "").split("?")[0].split("#")[0].replace(/^\/+/, "");
-		          p = p.replace(/^assets\//, "");
 		          const locDir = window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1).replace(/^\/+/, "");
 		          if (locDir && p.startsWith(locDir)) p = p.slice(locDir.length).replace(/^\/+/, "");
+		          p = p.replace(/^assets\//, "");
 		          const filename = p.split("/").pop();
 		          if (SPLITS[filename] || ALIASES[filename]) return ALIASES[filename] || filename;
 		          return ALIASES[p] || p;
