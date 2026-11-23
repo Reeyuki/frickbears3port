@@ -84,6 +84,9 @@ function trailer_rec_save() {
 // Paths are like "addons/Vee/icon.png". Binary files are served to GML as blob: URLs (for sprite_add / audio_create_stream).
 var __mfs = {
     files: new Map(),   // path -> { blob, url, text }
+    low: new Map(),     // lowercase path -> entry (O(1) case-insensitive lookup)
+    ver: 0,             // bumped on every change; invalidates listing caches
+    listCache: new Map(),
     ready: 0,
     status: 0,          // 0 idle, 1 busy, 2 done, -1 failed/cancelled
     message: "",
@@ -154,6 +157,8 @@ async function __mfsAdd(p, blob) {
     if (/\.(ogg|mp3|wav)$/i.test(p)) await __mfsDecodeAudio(e);
     if (__mfsIsText(p)) { try { e.text = __mfsTidyJson(await blob.text()); } catch (x) { e.text = ""; } }
     __mfs.files.set(p, e);
+    __mfs.low.set(p.toLowerCase(), e);
+    __mfs.ver++;
 }
 
 async function __mfsLoadAll() {
@@ -306,7 +311,8 @@ function __mfsRemoveSync(prefix) {
     var pre = prefix + "/";
     var del = [];
     __mfs.files.forEach(function (v, k) { if (k.indexOf(pre) === 0) { if (v.url) URL.revokeObjectURL(v.url); del.push(k); } });
-    del.forEach(function (k) { __mfs.files.delete(k); });
+    del.forEach(function (k) { __mfs.files.delete(k); __mfs.low.delete(k.toLowerCase()); });
+    __mfs.ver++;
     if (__mfs.db && del.length) {
         try {
             var tx = __mfs.db.transaction("files", "readwrite");
@@ -375,6 +381,9 @@ function mod_fs_ack() { if (__mfs.status !== 1) __mfs.status = 0; return 1; }
 
 function mod_fs_list(dir) {
     var d = String(dir).replace(/\\/g, "/").replace(/\/+$/, "");
+    var ck = d.toLowerCase();
+    var hit = __mfs.listCache.get(ck);
+    if (hit && hit.ver === __mfs.ver) return hit.json;
     var pre = d === "" ? "" : d + "/";
     var seen = {};
     var out = [];
@@ -388,15 +397,15 @@ function mod_fs_list(dir) {
         var key = name + "|" + isDir;
         if (!seen[key]) { seen[key] = 1; out.push({ n: name, d: isDir }); }
     });
-    return JSON.stringify(out);
+    var json = JSON.stringify(out);
+    __mfs.listCache.set(ck, { ver: __mfs.ver, json: json });
+    return json;
 }
 
 function __mfsFind(path) {
     var p = __mfsClean(path).join("/");
     if (__mfs.files.has(p)) return __mfs.files.get(p);
-    var lp = p.toLowerCase(), hit = null;
-    __mfs.files.forEach(function (v, k) { if (!hit && k.toLowerCase() === lp) hit = v; });
-    return hit;
+    return __mfs.low.get(p.toLowerCase()) || null;
 }
 
 function mod_fs_exists(path) { return __mfsFind(path) ? 1 : 0; }

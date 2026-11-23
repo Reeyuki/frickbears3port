@@ -4,7 +4,7 @@ q+=R.total;z+=R.loaded;B++}q=Math.ceil(q*k.Uj/B);k.setStatus&&k.setStatus(`Downl
 q;this.audio=z}function p(v){if(!v)throw"Loading data file failed."+Error().stack;if(v.constructor.name!==ArrayBuffer.name)throw"bad input to processPackageData"+Error().stack;v=new Uint8Array(v);n.prototype.Di=v;v=a.files;for(var q=0;q<v.length;++q)n.prototype.xi[v[q].filename].onload();k.removeRunDependency("datafile_runner.data")}k.FS_createPath("/","assets",!0, !0);ModuleName().FS_createPath("/assets","texgroup_renders",!0, !0);ModuleName().FS_createPath("/assets","texgroup_fbjumpscare",!0, !0);ModuleName().FS_createPath("/assets","texgroup_fbending",!0, !0);ModuleName().FS_createPath("/assets","texgroup_deathscreen",!0, !0);ModuleName().FS_createPath("/assets","texgroup_conceptart",!0, !0);ModuleName().FS_createPath("/assets","texgroup_buildingtextures",!0, !0);ModuleName().FS_createPath("/assets","frickmods",!0, !0);n.prototype={xi:{},open:function(v,q){this.name=q;this.xi[q]=this;k.addRunDependency(`fp ${this.name}`)},send:function(){},onload:function(){this.finish(this.Di.subarray(this.start,
 this.end))},finish:function(v){k.FS_createDataFile(this.name,null,v,!0,!0,!0);k.removeRunDependency(`fp ${this.name}`);this.xi[this.name]=null}};for(var r=a.files,u=0;u<r.length;++u)(new n(r[u].start,r[u].end,r[u].audio||0)).open("GET",r[u].filename);k.addRunDependency("datafile_runner.data");k.Lk||(k.Lk={});k.Lk["runner.data"]={Ul:!1};h?(p(h),h=null):g=p}"object"===typeof window?window.encodeURIComponent(window.location.pathname.toString().substring(0,window.location.pathname.toString().lastIndexOf("/"))+
 "/"):"undefined"===typeof process&&"undefined"!==typeof location&&encodeURIComponent(location.pathname.toString().substring(0,location.pathname.toString().lastIndexOf("/"))+"/");"function"!==typeof k.locateFilePackage||k.locateFile||(k.locateFile=k.locateFilePackage,l("warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)"));var e=k.locateFile?k.locateFile("runner.data",""):"runner.data",f=a.remote_package_size,g=null,h=k.getPreloadedPackage?
-k.getPreloadedPackage(e,f):null;h||b(e,f,function(n){g?(g(n),g=null):h=n},c);k.calledRun?d():(k.preRun||(k.preRun=[]),k.preRun.push(d))}({"files":[{"filename":"/assets/leveldata5.txt","start":0,"end":192308,"audio":0},{"filename":"/assets/leveldata4.txt","start":192308,"end":296957,"audio":0},{"filename":"/assets/leveldata3.txt","start":296957,"end":434533,"audio":0},{"filename":"/assets/leveldata2.txt","start":434533,"end":597638,"audio":0},{"filename":"/assets/leveldata1.txt","start":597638,"end":690254,"audio":0},{"filename":"/assets/trailer_recorder.js","start":690254,"end":693986,"audio":0},{"filename":"/assets/mod_fs.js","start":693986,"end":711266,"audio":0},{"filename":"/assets/options.ini","start":711266,"end":711386,"audio":0},{"filename":"/assets/frickmods/x.zip","start":711386,"end":2860774,"audio":0},{"filename":"/assets/frickmods/vee.zip","start":2860774,"end":6792079,"audio":0},{"filename":"/assets/frickmods/tails.zip","start":6792079,"end":6997224,"audio":0},{"filename":"/assets/frickmods/supersonic.zip","start":6997224,"end":10775932,"audio":0},{"filename":"/assets/frickmods/2011x.zip","start":10775932,"end":10935187,"audio":0}],"remote_package_size":10935187,"package_uuid":"49703721-3fb5-4744-ab63-53b4e433c669"});this.doGMLCallback=function(a,b){b=JSON.stringify(b);var c=aa(b)+1,d=m(c);t(b,w,d,c);console.log("AddAsyncMethod="+g_pAddAsyncMethod+", methodToCall="+a+", stringOnWasmHeap="+d+", argsAsJSON="+b);k.dynCall("vii",g_pAddAsyncMethod,[a,d])};
+k.getPreloadedPackage(e,f):null;h||b(e,f,function(n){g?(g(n),g=null):h=n},c);k.calledRun?d():(k.preRun||(k.preRun=[]),k.preRun.push(d))}({"files":[{"filename":"/assets/leveldata5.txt","start":0,"end":192308,"audio":0},{"filename":"/assets/leveldata4.txt","start":192308,"end":296957,"audio":0},{"filename":"/assets/leveldata3.txt","start":296957,"end":434533,"audio":0},{"filename":"/assets/leveldata2.txt","start":434533,"end":597638,"audio":0},{"filename":"/assets/leveldata1.txt","start":597638,"end":690254,"audio":0},{"filename":"/assets/trailer_recorder.js","start":690254,"end":693986,"audio":0},{"filename":"/assets/mod_fs.js","start":693986,"end":711668,"audio":0},{"filename":"/assets/options.ini","start":711668,"end":711788,"audio":0},{"filename":"/assets/frickmods/x.zip","start":711788,"end":2861176,"audio":0},{"filename":"/assets/frickmods/vee.zip","start":2861176,"end":6792481,"audio":0},{"filename":"/assets/frickmods/tails.zip","start":6792481,"end":6997626,"audio":0},{"filename":"/assets/frickmods/supersonic.zip","start":6997626,"end":10776334,"audio":0},{"filename":"/assets/frickmods/2011x.zip","start":10776334,"end":10935589,"audio":0}],"remote_package_size":10935589,"package_uuid":"bc5951e2-b9d5-4019-a522-1d3489766cfb"});this.doGMLCallback=function(a,b){b=JSON.stringify(b);var c=aa(b)+1,d=m(c);t(b,w,d,c);console.log("AddAsyncMethod="+g_pAddAsyncMethod+", methodToCall="+a+", stringOnWasmHeap="+d+", argsAsJSON="+b);k.dynCall("vii",g_pAddAsyncMethod,[a,d])};
 this.triggerAdPrefix=function(a,b,c,d,e){var f=m(80),g=f+16,h=f+32,n=f+48,p=f+64;ba(f+0,a,16);ba(g,b,16);ba(h,c,16);ba(n,d,16);ba(p,e,16);return f};this.ModuleName=function(){return k};this.triggerAdPostfix=function(a){ca(a)};this.triggerPaymentPrefix=function(a){var b=m(16);ba(b,a,16);return b};this.triggerPaymentPostfix=function(a){ca(a)};var ea=null,fa=[],ha=null,ia=null,ja=null,ka=null,la=null;function ma(){ea&&("visible"===document.visibilityState?ea.resume():ea.suspend())}var na=void 0,oa=void 0;
 this.gx_set_default_unhandled_exception_handler=function(a,b){na=a;oa=b;hasJSExceptionHandler=function(){return!0};doJSExceptionHandler=function(c){na(JSON.parse(c),oa)}};var pa=void 0;this.OGX_startDRMCheck=function(){pa&&k.dynCall("v",pa)};var qa=void 0,ra=void 0,sa=void 0,ta=void 0;this.GM_pause=function(){qa&&k.dynCall("v",qa)};this.GM_unpause=function(){ra&&k.dynCall("v",ra)};this.GM_tick=function(){sa&&k.dynCall("vd",sa,[performance.now()])};
 this.GM_is_multiplayer=function(){return ta?k.dynCall("i",ta):0};var ua=void 0,wa=void 0;this.GM_get_view_status=function(){var a=void 0;if(ua){var b=k.dynCall("i",ua);a=b?x(w,b):"";a=JSON.parse(a);ca(b)}return a};this.GM_set_view_status=function(a){if(wa){a=JSON.stringify(a);var b=aa(a)+1,c=m(b);t(a,w,c,b);console.log("GM_set_view_status="+wa+", stringOnWasmHeap="+c+", argsAsJSON="+a);k.dynCall("vi",wa,[c])}};var xa=[],ya=!1,za=!1;
@@ -309,6 +309,9 @@ k.noInitialRun&&(Li=!1);Ji();"undefined"!=typeof window&&(wallpaper_update_confi
 // Paths are like "addons/Vee/icon.png". Binary files are served to GML as blob: URLs (for sprite_add / audio_create_stream).
 var __mfs = {
     files: new Map(),   // path -> { blob, url, text }
+    low: new Map(),     // lowercase path -> entry (O(1) case-insensitive lookup)
+    ver: 0,             // bumped on every change; invalidates listing caches
+    listCache: new Map(),
     ready: 0,
     status: 0,          // 0 idle, 1 busy, 2 done, -1 failed/cancelled
     message: "",
@@ -379,6 +382,8 @@ async function __mfsAdd(p, blob) {
     if (/\.(ogg|mp3|wav)$/i.test(p)) await __mfsDecodeAudio(e);
     if (__mfsIsText(p)) { try { e.text = __mfsTidyJson(await blob.text()); } catch (x) { e.text = ""; } }
     __mfs.files.set(p, e);
+    __mfs.low.set(p.toLowerCase(), e);
+    __mfs.ver++;
 }
 
 async function __mfsLoadAll() {
@@ -531,7 +536,8 @@ function __mfsRemoveSync(prefix) {
     var pre = prefix + "/";
     var del = [];
     __mfs.files.forEach(function (v, k) { if (k.indexOf(pre) === 0) { if (v.url) URL.revokeObjectURL(v.url); del.push(k); } });
-    del.forEach(function (k) { __mfs.files.delete(k); });
+    del.forEach(function (k) { __mfs.files.delete(k); __mfs.low.delete(k.toLowerCase()); });
+    __mfs.ver++;
     if (__mfs.db && del.length) {
         try {
             var tx = __mfs.db.transaction("files", "readwrite");
@@ -600,6 +606,9 @@ function mod_fs_ack() { if (__mfs.status !== 1) __mfs.status = 0; return 1; }
 
 function mod_fs_list(dir) {
     var d = String(dir).replace(/\\/g, "/").replace(/\/+$/, "");
+    var ck = d.toLowerCase();
+    var hit = __mfs.listCache.get(ck);
+    if (hit && hit.ver === __mfs.ver) return hit.json;
     var pre = d === "" ? "" : d + "/";
     var seen = {};
     var out = [];
@@ -613,15 +622,15 @@ function mod_fs_list(dir) {
         var key = name + "|" + isDir;
         if (!seen[key]) { seen[key] = 1; out.push({ n: name, d: isDir }); }
     });
-    return JSON.stringify(out);
+    var json = JSON.stringify(out);
+    __mfs.listCache.set(ck, { ver: __mfs.ver, json: json });
+    return json;
 }
 
 function __mfsFind(path) {
     var p = __mfsClean(path).join("/");
     if (__mfs.files.has(p)) return __mfs.files.get(p);
-    var lp = p.toLowerCase(), hit = null;
-    __mfs.files.forEach(function (v, k) { if (!hit && k.toLowerCase() === lp) hit = v; });
-    return hit;
+    return __mfs.low.get(p.toLowerCase()) || null;
 }
 
 function mod_fs_exists(path) { return __mfsFind(path) ? 1 : 0; }
