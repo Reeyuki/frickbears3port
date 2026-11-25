@@ -5,6 +5,18 @@
   
 
   <head>
+<!-- FB-START-OVERLAY -->
+<script>
+(function () {
+  var C = window.AudioContext || window.webkitAudioContext;
+  window.__fbCtx = [];
+  if (C && window.Proxy) {
+    var P = new Proxy(C, { construct: function (t, a) { var c = new t(...a); window.__fbCtx.push(c); return c; } });
+    window.AudioContext = P; window.webkitAudioContext = P;
+  }
+})();
+</script>
+
     <meta charset="utf-8" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
@@ -666,6 +678,180 @@
     </script>
 
     <script type="text/javascript">
+		      (function () {
+		        const ASSET_BASE = "https://cdn.jsdelivr.net/gh/reeyuki/frickbears3port@fdc029430e1b88ff11c0fcaeb637410c3741ba57/";
+		        const SPLIT_SPEC = [["game.unx", 3], ["music.dat", 7], ["voicelines_ingame.dat", 7]];
+		        const SPLITS = Object.fromEntries(SPLIT_SPEC);
+		        const ALIASES = { "game.unc": "game.unx" };
+		        const splitCache = new Map();
+		        const nativeFetch = window.fetch ? window.fetch.bind(window) : null;
+		        const NativeXMLHttpRequest = window.XMLHttpRequest;
+		        const pad2 = function (n) { return String(n).padStart(2, "0"); };
+		        const normalizePath = function (path) {
+		          let p = String(path || "").split("?")[0].split("#")[0].replace(/^\/+/, "");
+		          const locDir = window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1).replace(/^\/+/, "");
+		          if (locDir && p.startsWith(locDir)) p = p.slice(locDir.length).replace(/^\/+/, "");
+		          p = p.replace(/^assets\//, "");
+		          const filename = p.split("/").pop();
+		          if (SPLITS[filename] || ALIASES[filename]) return ALIASES[filename] || filename;
+		          return ALIASES[p] || p;
+		        };
+		        const urlInfo = function (input) {
+		          if (typeof input === "string") {
+		            try {
+		              const u = new URL(input, window.location.href);
+		              const base = new URL(ASSET_BASE, window.location.href);
+		              if (u.href.startsWith(base.href)) return { rewrite: true, path: normalizePath(u.href.slice(base.href.length)) };
+		              if (u.origin === window.location.origin) return { rewrite: true, path: normalizePath(u.pathname) };
+		              return { rewrite: false, url: input };
+		            } catch (e) {
+		              return { rewrite: true, path: normalizePath(input) };
+		            }
+		          }
+		          if (input && typeof input.url === "string") return urlInfo(input.url);
+		          return { rewrite: false, url: "" };
+		        };
+	        const toCdnUrl = function (path) { return ASSET_BASE + path; };
+	        const concatArrayBuffers = function (buffers) {
+	          let total = 0;
+	          for (let i = 0; i < buffers.length; i++) total += buffers[i].byteLength;
+	          const out = new Uint8Array(total);
+	          let off = 0;
+	          for (let i = 0; i < buffers.length; i++) { out.set(new Uint8Array(buffers[i]), off); off += buffers[i].byteLength; }
+	          return out.buffer;
+	        };
+		        const fetchSplitArrayBuffer = async function (path, count) {
+		          const p = normalizePath(path);
+		          if (splitCache.has(p)) return splitCache.get(p);
+		          const parts = await Promise.all(Array.from({ length: count }, function (_, i) { return nativeFetch(toCdnUrl(p + pad2(i))).then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.arrayBuffer(); }); }));
+		          const ab = concatArrayBuffers(parts);
+		          splitCache.set(p, ab);
+		          return ab;
+		        };
+		        window.__SPLIT_PREFETCH__ = Promise.all(SPLIT_SPEC.map(function (x) { return fetchSplitArrayBuffer(x[0], x[1]); }));
+	        if (nativeFetch) {
+	          window.fetch = function (resource, init) {
+	            const info = urlInfo(resource);
+	            if (!info.rewrite) return nativeFetch(resource, init);
+	            const count = SPLITS[info.path];
+	            if (count) {
+	              return fetchSplitArrayBuffer(info.path, count).then(function (ab) { return new Response(ab); });
+	            }
+	            if (resource && typeof Request === "function" && resource instanceof Request) {
+	              const method = resource.method || "GET";
+	              const reqInit = { method: method, headers: resource.headers, mode: resource.mode, credentials: resource.credentials, cache: resource.cache, redirect: resource.redirect, referrer: resource.referrer, referrerPolicy: resource.referrerPolicy, integrity: resource.integrity, keepalive: resource.keepalive, signal: resource.signal };
+	              if (method !== "GET" && method !== "HEAD") reqInit.body = resource.body;
+	              return nativeFetch(new Request(toCdnUrl(info.path), reqInit));
+	            }
+	            return nativeFetch(toCdnUrl(info.path), init);
+	          };
+	        }
+	        if (NativeXMLHttpRequest) {
+		          function SplitAwareXMLHttpRequest() {
+		            this._native = new NativeXMLHttpRequest();
+		            this._useNative = true;
+		            this._listeners = {};
+		            this._method = "";
+		            this._url = "";
+		            this._async = true;
+		            this._body = null;
+		            this._responseType = "";
+		            this.readyState = 0;
+		            this.status = 0;
+		            this.statusText = "";
+		            this.responseURL = "";
+		            this.response = null;
+		            this.responseText = "";
+		            this.onreadystatechange = null;
+		            this.onload = null;
+		            this.onerror = null;
+		            this.onprogress = null;
+		            Object.defineProperty(this, "responseType", { configurable: true, enumerable: true, get: function () { return this._responseType; }, set: function (v) { this._responseType = v == null ? "" : String(v); try { this._native.responseType = this._responseType; } catch (e) {} } });
+		            const self = this;
+		            const forwardEvent = function (type) {
+	              const list = self._listeners[type];
+	              if (list) for (let i = 0; i < list.length; i++) { try { list[i].call(self); } catch (e) {} }
+	              const h = self["on" + type];
+	              if (typeof h === "function") { try { h.call(self); } catch (e) {} }
+	            };
+	            this._native.onreadystatechange = function () {
+	              self.readyState = self._native.readyState;
+	              self.status = self._native.status;
+	              self.statusText = self._native.statusText;
+	              try { self.responseURL = self._native.responseURL || self._url; } catch (e) { self.responseURL = self._url; }
+	              try { self.response = self._native.response; } catch (e) { self.response = null; }
+	              try { self.responseText = self._native.responseText || ""; } catch (e) { self.responseText = ""; }
+	              forwardEvent("readystatechange");
+	              if (self.readyState === 4) {
+	                if (self.status >= 200 && self.status < 300) forwardEvent("load"); else forwardEvent("error");
+	              }
+	            };
+	            this._native.onprogress = function () { forwardEvent("progress"); };
+	          }
+	          SplitAwareXMLHttpRequest.prototype.open = function (method, url, async, user, password) {
+	            this._method = method;
+	            this._url = url;
+	            this._async = async !== false;
+	            const info = urlInfo(url);
+	            const count = info.rewrite ? SPLITS[info.path] : 0;
+	            this._useNative = !info.rewrite || !count;
+	            this.readyState = 1;
+	            if (this._useNative) {
+	              this._native.open(method, info.rewrite ? toCdnUrl(info.path) : url, this._async, user, password);
+	              try { this._native.responseType = this.responseType; } catch (e) {}
+	            }
+	            if (typeof this.onreadystatechange === "function") try { this.onreadystatechange(); } catch (e) {}
+	          };
+	          SplitAwareXMLHttpRequest.prototype.send = function (body) {
+	            this._body = body;
+	            if (this._useNative) return this._native.send(body);
+	            const self = this;
+	            const info = urlInfo(this._url);
+	            const count = SPLITS[info.path];
+	            this.readyState = 2;
+	            if (typeof this.onreadystatechange === "function") try { this.onreadystatechange(); } catch (e) {}
+	            fetchSplitArrayBuffer(info.path, count).then(function (ab) {
+	              self.status = 200;
+	              self.statusText = "OK";
+	              self.responseURL = toCdnUrl(info.path);
+	              self.readyState = 4;
+	              if (self.responseType === "arraybuffer") {
+	                self.response = ab;
+	                self.responseText = "";
+	              } else if (self.responseType === "blob") {
+	                self.response = new Blob([ab]);
+	                self.responseText = "";
+	              } else {
+	                const text = new TextDecoder("utf-8").decode(new Uint8Array(ab));
+	                self.responseText = text;
+	                self.response = self.responseType === "json" ? JSON.parse(text) : text;
+	              }
+	              if (typeof self.onreadystatechange === "function") try { self.onreadystatechange(); } catch (e) {}
+	              if (typeof self.onload === "function") try { self.onload(); } catch (e) {}
+	              const list = self._listeners.load;
+	              if (list) for (let i = 0; i < list.length; i++) { try { list[i].call(self); } catch (e) {} }
+	            }).catch(function () {
+	              self.status = 404;
+	              self.statusText = "Not Found";
+	              self.readyState = 4;
+	              if (typeof self.onreadystatechange === "function") try { self.onreadystatechange(); } catch (e) {}
+	              if (typeof self.onerror === "function") try { self.onerror(); } catch (e) {}
+	              const list = self._listeners.error;
+	              if (list) for (let i = 0; i < list.length; i++) { try { list[i].call(self); } catch (e) {} }
+	            });
+	          };
+	          SplitAwareXMLHttpRequest.prototype.abort = function () { if (this._useNative) this._native.abort(); };
+	          SplitAwareXMLHttpRequest.prototype.setRequestHeader = function (h, v) { if (this._useNative) this._native.setRequestHeader(h, v); };
+	          SplitAwareXMLHttpRequest.prototype.getResponseHeader = function (h) { return this._useNative ? this._native.getResponseHeader(h) : null; };
+	          SplitAwareXMLHttpRequest.prototype.getAllResponseHeaders = function () { return this._useNative ? this._native.getAllResponseHeaders() : ""; };
+	          SplitAwareXMLHttpRequest.prototype.overrideMimeType = function (t) { if (this._useNative) this._native.overrideMimeType(t); };
+	          SplitAwareXMLHttpRequest.prototype.addEventListener = function (type, cb) { (this._listeners[type] = this._listeners[type] || []).push(cb); };
+	          SplitAwareXMLHttpRequest.prototype.removeEventListener = function (type, cb) { const a = this._listeners[type]; if (!a) return; const i = a.indexOf(cb); if (i >= 0) a.splice(i, 1); };
+	          window.XMLHttpRequest = SplitAwareXMLHttpRequest;
+	        }
+	        window.__ASSET_BASE__ = ASSET_BASE;
+	        window.__NORMALIZE_PATH__ = normalizePath;
+	      })();
       const CHANGE_ASPECT_RATIO = true;
 
       var bodyElement = document.getElementsByTagName("body")[0];
@@ -710,6 +896,11 @@
       var Module = {
         preRun: [],
         postRun: [],
+        locateFile: function (path, prefix) {
+          const p = String(path).replace(/^\/+/, "");
+          const normalized = window.__NORMALIZE_PATH__ ? window.__NORMALIZE_PATH__(p) : p;
+          return window.__ASSET_BASE__ + normalized;
+        },
         print: (function () {
           var element = document.getElementById("output");
           if (element) element.value = ""; // clear browser cache
@@ -856,216 +1047,216 @@
 "runner.wasm",
 "audio-worklet.js",
 "game.unx",
-"assets/music.dat",
-"assets/soundeffects.dat",
-"assets/voicelines_death.dat",
-"assets/voicelines_ingame.dat",
-"assets/voicelines_deathcoin.dat",
-"assets/voicelines_selection.dat",
-"assets/jumpscreams.dat",
-"assets/texgroup_buildingtextures/buildingtextures_0.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_1.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_2.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_3.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_4.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_5.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_6.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_7.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_8.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_9.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_10.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_11.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_12.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_13.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_14.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_15.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_16.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_17.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_18.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_19.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_20.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_21.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_22.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_23.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_24.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_25.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_26.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_27.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_28.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_29.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_30.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_31.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_32.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_33.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_34.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_35.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_36.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_37.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_38.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_39.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_40.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_41.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_42.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_43.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_44.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_45.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_46.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_47.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_48.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_49.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_50.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_51.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_52.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_53.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_54.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_55.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_56.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_57.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_58.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_59.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_60.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_61.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_62.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_63.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_64.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_65.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_66.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_67.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_68.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_69.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_70.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_71.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_72.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_73.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_74.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_75.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_76.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_77.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_78.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_79.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_80.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_81.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_82.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_83.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_84.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_85.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_86.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_87.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_88.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_89.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_90.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_91.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_92.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_93.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_94.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_95.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_96.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_97.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_98.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_99.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_100.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_101.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_102.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_103.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_104.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_105.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_106.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_107.yytex",
-"assets/texgroup_buildingtextures/buildingtextures_108.yytex",
-"assets/texgroup_conceptart/conceptart_0.yytex",
-"assets/texgroup_conceptart/conceptart_1.yytex",
-"assets/texgroup_conceptart/conceptart_2.yytex",
-"assets/texgroup_conceptart/conceptart_3.yytex",
-"assets/texgroup_conceptart/conceptart_4.yytex",
-"assets/texgroup_conceptart/conceptart_5.yytex",
-"assets/texgroup_conceptart/conceptart_6.yytex",
-"assets/texgroup_conceptart/conceptart_7.yytex",
-"assets/texgroup_conceptart/conceptart_8.yytex",
-"assets/texgroup_conceptart/conceptart_9.yytex",
-"assets/texgroup_conceptart/conceptart_10.yytex",
-"assets/texgroup_conceptart/conceptart_11.yytex",
-"assets/texgroup_conceptart/conceptart_12.yytex",
-"assets/texgroup_conceptart/conceptart_13.yytex",
-"assets/texgroup_conceptart/conceptart_14.yytex",
-"assets/texgroup_conceptart/conceptart_15.yytex",
-"assets/texgroup_conceptart/conceptart_16.yytex",
-"assets/texgroup_conceptart/conceptart_17.yytex",
-"assets/texgroup_conceptart/conceptart_18.yytex",
-"assets/texgroup_conceptart/conceptart_19.yytex",
-"assets/texgroup_conceptart/conceptart_20.yytex",
-"assets/texgroup_conceptart/conceptart_21.yytex",
-"assets/texgroup_conceptart/conceptart_22.yytex",
-"assets/texgroup_conceptart/conceptart_23.yytex",
-"assets/texgroup_conceptart/conceptart_24.yytex",
-"assets/texgroup_conceptart/conceptart_25.yytex",
-"assets/texgroup_conceptart/conceptart_26.yytex",
-"assets/texgroup_conceptart/conceptart_27.yytex",
-"assets/texgroup_conceptart/conceptart_28.yytex",
-"assets/texgroup_conceptart/conceptart_29.yytex",
-"assets/texgroup_conceptart/conceptart_30.yytex",
-"assets/texgroup_conceptart/conceptart_31.yytex",
-"assets/texgroup_conceptart/conceptart_32.yytex",
-"assets/texgroup_conceptart/conceptart_33.yytex",
-"assets/texgroup_conceptart/conceptart_34.yytex",
-"assets/texgroup_conceptart/conceptart_35.yytex",
-"assets/texgroup_conceptart/conceptart_36.yytex",
-"assets/texgroup_conceptart/conceptart_37.yytex",
-"assets/texgroup_conceptart/conceptart_38.yytex",
-"assets/texgroup_conceptart/conceptart_39.yytex",
-"assets/texgroup_deathscreen/deathscreen_0.yytex",
-"assets/texgroup_deathscreen/deathscreen_1.yytex",
-"assets/texgroup_deathscreen/deathscreen_2.yytex",
-"assets/texgroup_deathscreen/deathscreen_3.yytex",
-"assets/texgroup_fbending/finalbossending_0.yytex",
-"assets/texgroup_fbending/finalbossending_1.yytex",
-"assets/texgroup_fbending/finalbossending_2.yytex",
-"assets/texgroup_fbending/finalbossending_3.yytex",
-"assets/texgroup_fbending/finalbossending_4.yytex",
-"assets/texgroup_fbending/finalbossending_5.yytex",
-"assets/texgroup_fbending/finalbossending_6.yytex",
-"assets/texgroup_fbjumpscare/finalbossjumpscare_0.yytex",
-"assets/texgroup_fbjumpscare/finalbossjumpscare_1.yytex",
-"assets/texgroup_fbjumpscare/finalbossjumpscare_2.yytex",
-"assets/texgroup_fbjumpscare/finalbossjumpscare_3.yytex",
-"assets/texgroup_fbjumpscare/finalbossjumpscare_4.yytex",
-"assets/texgroup_fbjumpscare/finalbossjumpscare_5.yytex",
-"assets/texgroup_renders/renders_0.yytex",
-"assets/texgroup_renders/renders_1.yytex",
-"assets/texgroup_renders/renders_2.yytex",
-"assets/texgroup_renders/renders_3.yytex",
-"assets/texgroup_renders/renders_4.yytex",
-"assets/texgroup_renders/renders_5.yytex",
-"assets/texgroup_renders/renders_6.yytex",
-"assets/texgroup_renders/renders_7.yytex",
-"assets/texgroup_renders/renders_8.yytex",
-"assets/texgroup_renders/renders_9.yytex",
-"assets/texgroup_renders/renders_10.yytex",
-"assets/texgroup_renders/renders_11.yytex",
-"assets/texgroup_renders/renders_12.yytex",
-"assets/texgroup_renders/renders_13.yytex",
-"assets/texgroup_renders/renders_14.yytex",
-"assets/texgroup_renders/renders_15.yytex",
-"assets/texgroup_renders/renders_16.yytex",
-"assets/texgroup_renders/renders_17.yytex",
-"assets/texgroup_renders/renders_18.yytex",
-"assets/texgroup_renders/renders_19.yytex",
-"assets/texgroup_renders/renders_20.yytex",
-"assets/texgroup_renders/renders_21.yytex",
-"assets/texgroup_renders/renders_22.yytex",
-"assets/texgroup_renders/renders_23.yytex",
-"assets/texgroup_renders/renders_24.yytex",
-"assets/texgroup_renders/renders_25.yytex",
-"assets/texgroup_renders/renders_26.yytex",
-"assets/texgroup_renders/renders_27.yytex",
-"assets/texgroup_renders/renders_28.yytex",
-"assets/texgroup_renders/renders_29.yytex",
-"assets/texgroup_renders/renders_30.yytex",
-"assets/texgroup_renders/renders_31.yytex",
-"assets/texgroup_renders/renders_32.yytex",
-"assets/texgroup_renders/renders_33.yytex",
-"assets/texgroup_renders/renders_34.yytex",
-"assets/texgroup_renders/renders_35.yytex",
-"assets/texgroup_renders/renders_36.yytex" ].join( ";");
+"music.dat",
+"soundeffects.dat",
+"voicelines_death.dat",
+"voicelines_ingame.dat",
+"voicelines_deathcoin.dat",
+"voicelines_selection.dat",
+"jumpscreams.dat",
+"texgroup_buildingtextures/buildingtextures_0.yytex",
+"texgroup_buildingtextures/buildingtextures_1.yytex",
+"texgroup_buildingtextures/buildingtextures_2.yytex",
+"texgroup_buildingtextures/buildingtextures_3.yytex",
+"texgroup_buildingtextures/buildingtextures_4.yytex",
+"texgroup_buildingtextures/buildingtextures_5.yytex",
+"texgroup_buildingtextures/buildingtextures_6.yytex",
+"texgroup_buildingtextures/buildingtextures_7.yytex",
+"texgroup_buildingtextures/buildingtextures_8.yytex",
+"texgroup_buildingtextures/buildingtextures_9.yytex",
+"texgroup_buildingtextures/buildingtextures_10.yytex",
+"texgroup_buildingtextures/buildingtextures_11.yytex",
+"texgroup_buildingtextures/buildingtextures_12.yytex",
+"texgroup_buildingtextures/buildingtextures_13.yytex",
+"texgroup_buildingtextures/buildingtextures_14.yytex",
+"texgroup_buildingtextures/buildingtextures_15.yytex",
+"texgroup_buildingtextures/buildingtextures_16.yytex",
+"texgroup_buildingtextures/buildingtextures_17.yytex",
+"texgroup_buildingtextures/buildingtextures_18.yytex",
+"texgroup_buildingtextures/buildingtextures_19.yytex",
+"texgroup_buildingtextures/buildingtextures_20.yytex",
+"texgroup_buildingtextures/buildingtextures_21.yytex",
+"texgroup_buildingtextures/buildingtextures_22.yytex",
+"texgroup_buildingtextures/buildingtextures_23.yytex",
+"texgroup_buildingtextures/buildingtextures_24.yytex",
+"texgroup_buildingtextures/buildingtextures_25.yytex",
+"texgroup_buildingtextures/buildingtextures_26.yytex",
+"texgroup_buildingtextures/buildingtextures_27.yytex",
+"texgroup_buildingtextures/buildingtextures_28.yytex",
+"texgroup_buildingtextures/buildingtextures_29.yytex",
+"texgroup_buildingtextures/buildingtextures_30.yytex",
+"texgroup_buildingtextures/buildingtextures_31.yytex",
+"texgroup_buildingtextures/buildingtextures_32.yytex",
+"texgroup_buildingtextures/buildingtextures_33.yytex",
+"texgroup_buildingtextures/buildingtextures_34.yytex",
+"texgroup_buildingtextures/buildingtextures_35.yytex",
+"texgroup_buildingtextures/buildingtextures_36.yytex",
+"texgroup_buildingtextures/buildingtextures_37.yytex",
+"texgroup_buildingtextures/buildingtextures_38.yytex",
+"texgroup_buildingtextures/buildingtextures_39.yytex",
+"texgroup_buildingtextures/buildingtextures_40.yytex",
+"texgroup_buildingtextures/buildingtextures_41.yytex",
+"texgroup_buildingtextures/buildingtextures_42.yytex",
+"texgroup_buildingtextures/buildingtextures_43.yytex",
+"texgroup_buildingtextures/buildingtextures_44.yytex",
+"texgroup_buildingtextures/buildingtextures_45.yytex",
+"texgroup_buildingtextures/buildingtextures_46.yytex",
+"texgroup_buildingtextures/buildingtextures_47.yytex",
+"texgroup_buildingtextures/buildingtextures_48.yytex",
+"texgroup_buildingtextures/buildingtextures_49.yytex",
+"texgroup_buildingtextures/buildingtextures_50.yytex",
+"texgroup_buildingtextures/buildingtextures_51.yytex",
+"texgroup_buildingtextures/buildingtextures_52.yytex",
+"texgroup_buildingtextures/buildingtextures_53.yytex",
+"texgroup_buildingtextures/buildingtextures_54.yytex",
+"texgroup_buildingtextures/buildingtextures_55.yytex",
+"texgroup_buildingtextures/buildingtextures_56.yytex",
+"texgroup_buildingtextures/buildingtextures_57.yytex",
+"texgroup_buildingtextures/buildingtextures_58.yytex",
+"texgroup_buildingtextures/buildingtextures_59.yytex",
+"texgroup_buildingtextures/buildingtextures_60.yytex",
+"texgroup_buildingtextures/buildingtextures_61.yytex",
+"texgroup_buildingtextures/buildingtextures_62.yytex",
+"texgroup_buildingtextures/buildingtextures_63.yytex",
+"texgroup_buildingtextures/buildingtextures_64.yytex",
+"texgroup_buildingtextures/buildingtextures_65.yytex",
+"texgroup_buildingtextures/buildingtextures_66.yytex",
+"texgroup_buildingtextures/buildingtextures_67.yytex",
+"texgroup_buildingtextures/buildingtextures_68.yytex",
+"texgroup_buildingtextures/buildingtextures_69.yytex",
+"texgroup_buildingtextures/buildingtextures_70.yytex",
+"texgroup_buildingtextures/buildingtextures_71.yytex",
+"texgroup_buildingtextures/buildingtextures_72.yytex",
+"texgroup_buildingtextures/buildingtextures_73.yytex",
+"texgroup_buildingtextures/buildingtextures_74.yytex",
+"texgroup_buildingtextures/buildingtextures_75.yytex",
+"texgroup_buildingtextures/buildingtextures_76.yytex",
+"texgroup_buildingtextures/buildingtextures_77.yytex",
+"texgroup_buildingtextures/buildingtextures_78.yytex",
+"texgroup_buildingtextures/buildingtextures_79.yytex",
+"texgroup_buildingtextures/buildingtextures_80.yytex",
+"texgroup_buildingtextures/buildingtextures_81.yytex",
+"texgroup_buildingtextures/buildingtextures_82.yytex",
+"texgroup_buildingtextures/buildingtextures_83.yytex",
+"texgroup_buildingtextures/buildingtextures_84.yytex",
+"texgroup_buildingtextures/buildingtextures_85.yytex",
+"texgroup_buildingtextures/buildingtextures_86.yytex",
+"texgroup_buildingtextures/buildingtextures_87.yytex",
+"texgroup_buildingtextures/buildingtextures_88.yytex",
+"texgroup_buildingtextures/buildingtextures_89.yytex",
+"texgroup_buildingtextures/buildingtextures_90.yytex",
+"texgroup_buildingtextures/buildingtextures_91.yytex",
+"texgroup_buildingtextures/buildingtextures_92.yytex",
+"texgroup_buildingtextures/buildingtextures_93.yytex",
+"texgroup_buildingtextures/buildingtextures_94.yytex",
+"texgroup_buildingtextures/buildingtextures_95.yytex",
+"texgroup_buildingtextures/buildingtextures_96.yytex",
+"texgroup_buildingtextures/buildingtextures_97.yytex",
+"texgroup_buildingtextures/buildingtextures_98.yytex",
+"texgroup_buildingtextures/buildingtextures_99.yytex",
+"texgroup_buildingtextures/buildingtextures_100.yytex",
+"texgroup_buildingtextures/buildingtextures_101.yytex",
+"texgroup_buildingtextures/buildingtextures_102.yytex",
+"texgroup_buildingtextures/buildingtextures_103.yytex",
+"texgroup_buildingtextures/buildingtextures_104.yytex",
+"texgroup_buildingtextures/buildingtextures_105.yytex",
+"texgroup_buildingtextures/buildingtextures_106.yytex",
+"texgroup_buildingtextures/buildingtextures_107.yytex",
+"texgroup_buildingtextures/buildingtextures_108.yytex",
+"texgroup_conceptart/conceptart_0.yytex",
+"texgroup_conceptart/conceptart_1.yytex",
+"texgroup_conceptart/conceptart_2.yytex",
+"texgroup_conceptart/conceptart_3.yytex",
+"texgroup_conceptart/conceptart_4.yytex",
+"texgroup_conceptart/conceptart_5.yytex",
+"texgroup_conceptart/conceptart_6.yytex",
+"texgroup_conceptart/conceptart_7.yytex",
+"texgroup_conceptart/conceptart_8.yytex",
+"texgroup_conceptart/conceptart_9.yytex",
+"texgroup_conceptart/conceptart_10.yytex",
+"texgroup_conceptart/conceptart_11.yytex",
+"texgroup_conceptart/conceptart_12.yytex",
+"texgroup_conceptart/conceptart_13.yytex",
+"texgroup_conceptart/conceptart_14.yytex",
+"texgroup_conceptart/conceptart_15.yytex",
+"texgroup_conceptart/conceptart_16.yytex",
+"texgroup_conceptart/conceptart_17.yytex",
+"texgroup_conceptart/conceptart_18.yytex",
+"texgroup_conceptart/conceptart_19.yytex",
+"texgroup_conceptart/conceptart_20.yytex",
+"texgroup_conceptart/conceptart_21.yytex",
+"texgroup_conceptart/conceptart_22.yytex",
+"texgroup_conceptart/conceptart_23.yytex",
+"texgroup_conceptart/conceptart_24.yytex",
+"texgroup_conceptart/conceptart_25.yytex",
+"texgroup_conceptart/conceptart_26.yytex",
+"texgroup_conceptart/conceptart_27.yytex",
+"texgroup_conceptart/conceptart_28.yytex",
+"texgroup_conceptart/conceptart_29.yytex",
+"texgroup_conceptart/conceptart_30.yytex",
+"texgroup_conceptart/conceptart_31.yytex",
+"texgroup_conceptart/conceptart_32.yytex",
+"texgroup_conceptart/conceptart_33.yytex",
+"texgroup_conceptart/conceptart_34.yytex",
+"texgroup_conceptart/conceptart_35.yytex",
+"texgroup_conceptart/conceptart_36.yytex",
+"texgroup_conceptart/conceptart_37.yytex",
+"texgroup_conceptart/conceptart_38.yytex",
+"texgroup_conceptart/conceptart_39.yytex",
+"texgroup_deathscreen/deathscreen_0.yytex",
+"texgroup_deathscreen/deathscreen_1.yytex",
+"texgroup_deathscreen/deathscreen_2.yytex",
+"texgroup_deathscreen/deathscreen_3.yytex",
+"texgroup_fbending/finalbossending_0.yytex",
+"texgroup_fbending/finalbossending_1.yytex",
+"texgroup_fbending/finalbossending_2.yytex",
+"texgroup_fbending/finalbossending_3.yytex",
+"texgroup_fbending/finalbossending_4.yytex",
+"texgroup_fbending/finalbossending_5.yytex",
+"texgroup_fbending/finalbossending_6.yytex",
+"texgroup_fbjumpscare/finalbossjumpscare_0.yytex",
+"texgroup_fbjumpscare/finalbossjumpscare_1.yytex",
+"texgroup_fbjumpscare/finalbossjumpscare_2.yytex",
+"texgroup_fbjumpscare/finalbossjumpscare_3.yytex",
+"texgroup_fbjumpscare/finalbossjumpscare_4.yytex",
+"texgroup_fbjumpscare/finalbossjumpscare_5.yytex",
+"texgroup_renders/renders_0.yytex",
+"texgroup_renders/renders_1.yytex",
+"texgroup_renders/renders_2.yytex",
+"texgroup_renders/renders_3.yytex",
+"texgroup_renders/renders_4.yytex",
+"texgroup_renders/renders_5.yytex",
+"texgroup_renders/renders_6.yytex",
+"texgroup_renders/renders_7.yytex",
+"texgroup_renders/renders_8.yytex",
+"texgroup_renders/renders_9.yytex",
+"texgroup_renders/renders_10.yytex",
+"texgroup_renders/renders_11.yytex",
+"texgroup_renders/renders_12.yytex",
+"texgroup_renders/renders_13.yytex",
+"texgroup_renders/renders_14.yytex",
+"texgroup_renders/renders_15.yytex",
+"texgroup_renders/renders_16.yytex",
+"texgroup_renders/renders_17.yytex",
+"texgroup_renders/renders_18.yytex",
+"texgroup_renders/renders_19.yytex",
+"texgroup_renders/renders_20.yytex",
+"texgroup_renders/renders_21.yytex",
+"texgroup_renders/renders_22.yytex",
+"texgroup_renders/renders_23.yytex",
+"texgroup_renders/renders_24.yytex",
+"texgroup_renders/renders_25.yytex",
+"texgroup_renders/renders_26.yytex",
+"texgroup_renders/renders_27.yytex",
+"texgroup_renders/renders_28.yytex",
+"texgroup_renders/renders_29.yytex",
+"texgroup_renders/renders_30.yytex",
+"texgroup_renders/renders_31.yytex",
+"texgroup_renders/renders_32.yytex",
+"texgroup_renders/renders_33.yytex",
+"texgroup_renders/renders_34.yytex",
+"texgroup_renders/renders_35.yytex",
+"texgroup_renders/renders_36.yytex" ].join( ";");
       }
 
       function manifestFilesMD5()
@@ -1976,12 +2167,21 @@
         wallpaper_update_config(JSON.stringify(wallpaperConfig));
       }
     </script>
-    <script async type="text/javascript" src="runner.js"></script>
+    <script async type="text/javascript" src="https://cdn.jsdelivr.net/gh/reeyuki/frickbears3port@fdc029430e1b88ff11c0fcaeb637410c3741ba57/runner.js"></script>
 
     <!-- Custom BodyEnd code is injected here -->
     
 
-  </body>
+  <!-- FB-START-OVERLAY -->
+<div id="fbStart" style="position:fixed;inset:0;z-index:99999;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font:24px sans-serif;letter-spacing:2px;cursor:pointer">Click to start</div>
+<script>
+document.getElementById("fbStart").addEventListener("click", function () {
+  (window.__fbCtx || []).forEach(function (c) { try { c.resume(); } catch (e) {} });
+  try { window.focus(); var cv = document.getElementById("canvas"); if (cv) cv.focus(); } catch (e) {}
+  this.remove();
+});
+</script>
+</body>
   
   <!-- Custom PostBody code is injected here -->
   
