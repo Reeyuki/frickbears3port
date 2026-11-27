@@ -496,6 +496,12 @@ function fb_file_import_start() {
 }
 function fb_file_import_status() { return __fbImp.status; }
 function fb_file_import_content() { return __fbImp.content; }
+
+
+// dev autotest hook: ?fb_at=... in the page URL (empty string when absent)
+function mod_fs_url_param(name) {
+    try { return new URLSearchParams(window.location.search).get(String(name)) || ""; } catch (x) { return ""; }
+}
 [LLVM-OPERAGX]
 EMSDKDir="/usr/lib/emscripten/emsdk_env.sh"
 [OperaGX]
